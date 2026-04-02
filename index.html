@@ -1,34 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DAPS 2026</title>
+  <title>DAPS 2026 by RARM</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; margin: 0; display: flex; flex-direction: column; align-items: center; }
-    .header { width: 100%; padding: 20px 0; text-align: center; background: #064e3b; color: #fbbf24; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    #reader { width: 90%; max-width: 400px; border-radius: 20px; overflow: hidden; margin-top: 20px; border: 4px solid white; }
-    #res { width: 85%; max-width: 350px; margin-top: 20px; padding: 25px; border-radius: 25px; background: white; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
-    #nm { font-size: 1.5rem; font-weight: 800; margin: 10px 0; }
-    .poin-badge { display: inline-block; padding: 5px 15px; border-radius: 50px; background: #064e3b; color: white; font-weight: 800; font-size: 0.8rem; margin-top: 10px; }
-    .status-msg { font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+    :root { --emerald: #064e3b; --gold: #b45309; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    .header { width: 100%; padding: 20px 0; text-align: center; background: var(--emerald); border-bottom: 4px solid #fbbf24; color: white; }
+    #reader { width: 92%; max-width: 400px; border-radius: 20px; overflow: hidden; margin-top: 15px; border: 4px solid white; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+    #res { width: 88%; max-width: 360px; margin-top: 15px; padding: 20px; border-radius: 25px; background: white; text-align: center; border: 2px solid #e2e8f0; transition: 0.2s; }
+    #nm { font-size: 1.4rem; font-weight: 800; margin: 8px 0; line-height: 1.2; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; background: #f1f5f9; color: #64748b; text-transform: uppercase; }
+    .poin { display: inline-block; padding: 6px 14px; border-radius: 12px; background: var(--emerald); color: white; font-weight: 800; margin-top: 10px; font-size: 0.9rem; }
+    .success { border-color: #10b981 !important; background: #f0fdf4 !important; }
+    .warning { border-color: #f59e0b !important; background: #fffbeb !important; }
+    .error { border-color: #ef4444 !important; background: #fef2f2 !important; }
   </style>
 </head>
 <body>
+
   <div class="header">
-    <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.8;">OFFICIAL ATTENDANCE</div>
-    <div style="font-size: 1.2rem; font-weight: 800;">DAPS 2026</div>
+    <div style="font-size: 0.6rem; font-weight: 800; letter-spacing: 2px; opacity: 0.8;">DAPS 2026</div>
+    <div style="font-size: 1.3rem; font-weight: 800;">by RARM</div>
   </div>
 
   <div id="reader"></div>
   
   <div id="res">
-    <div id="st" class="status-msg">SIAP PINDAI</div>
-    <div id="nm">-</div>
-    <div id="sub" style="font-size: 0.8rem; opacity: 0.7;">Silakan scan QR Code Anda</div>
-    <div id="poin" class="poin-badge" style="display:none;"></div>
+    <div id="st" class="badge">SIAP PINDAI</div>
+    <div id="nm">Menunggu Scan...</div>
+    <div id="sub" style="font-size: 0.8rem; color: #64748b;">Arahkan kamera ke QR Code</div>
+    <div id="pn" class="poin" style="display:none"></div>
   </div>
 
   <script>
@@ -38,37 +43,52 @@
     function onScanSuccess(id) {
       if (isProcessing) return;
       isProcessing = true;
-      document.getElementById('st').innerText = "MENGECEK JADWAL...";
-      
+
+      // Feedback Instan
+      if (navigator.vibrate) navigator.vibrate(60);
+      document.getElementById('st').innerText = "MEMPROSES...";
+      document.getElementById('st').style.color = "#2563eb";
+
       fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ id: id }) })
       .then(r => r.json())
       .then(res => {
         const card = document.getElementById('res');
-        const poin = document.getElementById('poin');
+        const pn = document.getElementById('pn');
         
-        card.style.borderColor = res.theme || "#e2e8f0";
+        card.className = res.status.toLowerCase();
         document.getElementById('st').innerText = res.title;
         document.getElementById('st').style.color = res.theme || "#64748b";
-        document.getElementById('nm').innerText = res.nama || "-";
-        document.getElementById('sub').innerText = res.sub || "-";
+        document.getElementById('nm').innerText = res.nama || "ID: " + id;
+        document.getElementById('sub').innerText = res.sub;
         
         if(res.poin) {
-          poin.style.display = "inline-block";
-          poin.innerText = res.poin + " POIN";
-          poin.style.background = res.theme;
+          pn.style.display = "inline-block";
+          pn.innerText = res.poin + " POIN";
+          pn.style.background = res.theme;
         }
 
+        // JEDA SANGAT SINGKAT (1 Detik)
         setTimeout(() => {
           isProcessing = false;
-          card.style.borderColor = "#e2e8f0";
-          poin.style.display = "none";
+          card.className = "";
+          pn.style.display = "none";
           document.getElementById('st').innerText = "SIAP PINDAI";
           document.getElementById('st').style.color = "#64748b";
-        }, 4000);
+        }, 1200); 
+      })
+      .catch(err => {
+        isProcessing = false;
+        document.getElementById('st').innerText = "KONEKSI ERROR";
+        setTimeout(() => isProcessing = false, 2000);
       });
     }
 
-    new Html5Qrcode("reader").start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, onScanSuccess);
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      { fps: 30, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 }, 
+      onScanSuccess
+    );
   </script>
 </body>
 </html>
