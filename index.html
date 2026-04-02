@@ -1,100 +1,74 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DAPS 2026 - Digital Attendance</title>
+  <title>DAPS 2026 PRO</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
   <style>
-    :root { --emerald: #064e3b; --gold: #b45309; --bg: #f8fafc; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #1e293b; }
-    
-    .header { width: 100%; padding: 30px 0; text-align: center; background: white; border-bottom: 4px solid var(--gold); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-    .header h1 { font-size: 1.5rem; font-weight: 800; color: var(--emerald); margin: 0; letter-spacing: 2px; }
-    .sub-header { font-size: 0.7rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; }
-
-    #reader { width: 90%; max-width: 400px; border-radius: 24px; overflow: hidden; margin-top: 30px; border: 6px solid white; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); }
-    
-    #res { width: 85%; max-width: 360px; margin-top: 30px; padding: 30px; border-radius: 32px; text-align: center; background: white; transition: all 0.4s ease; border: 1px solid #e2e8f0; }
-    
-    /* Elegant Visual States */
-    .success { background: #f0fdf4 !important; border-color: #10b981 !important; box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.1); }
-    .warning { background: #fffbeb !important; border-color: #f59e0b !important; }
-    .error { background: #fef2f2 !important; border-color: #ef4444 !important; }
-
-    #nm { font-size: 1.6rem; font-weight: 800; margin: 10px 0; line-height: 1.2; color: inherit; }
-    .badge { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; margin-bottom: 10px; background: #f1f5f9; color: #64748b; }
-
-    .grid { display: flex; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
-    .item { flex: 1; }
-    .val { font-size: 1.2rem; font-weight: 700; display: block; color: var(--emerald); }
-    .lab { font-size: 0.6rem; font-weight: 600; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; margin: 0; display: flex; flex-direction: column; align-items: center; }
+    .header { width: 100%; padding: 20px 0; text-align: center; background: #064e3b; color: #fbbf24; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    #reader { width: 90%; max-width: 400px; border-radius: 20px; overflow: hidden; margin-top: 20px; border: 4px solid white; }
+    #res { width: 85%; max-width: 350px; margin-top: 20px; padding: 25px; border-radius: 25px; background: white; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
+    #nm { font-size: 1.5rem; font-weight: 800; margin: 10px 0; }
+    .poin-badge { display: inline-block; padding: 5px 15px; border-radius: 50px; background: #064e3b; color: white; font-weight: 800; font-size: 0.8rem; margin-top: 10px; }
+    .status-msg { font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
   </style>
 </head>
 <body>
-
   <div class="header">
-    <h1>DAPS 2026</h1>
-    <div class="sub-header">Darul Arqam Purna Studi</div>
+    <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.8;">OFFICIAL ATTENDANCE</div>
+    <div style="font-size: 1.2rem; font-weight: 800;">DAPS 2026</div>
   </div>
 
   <div id="reader"></div>
   
   <div id="res">
-    <div id="st" class="badge">SIAP PINDAI</div>
+    <div id="st" class="status-msg">SIAP PINDAI</div>
     <div id="nm">-</div>
-    <div class="grid">
-      <div class="item">
-        <span id="kl" class="val">-</span>
-        <span class="lab">IDENTITAS</span>
-      </div>
-      <div class="item" style="border-left: 1px solid rgba(0,0,0,0.05);">
-        <span id="wk" class="val">-</span>
-        <span class="lab">WAKTU</span>
-      </div>
-    </div>
+    <div id="sub" style="font-size: 0.8rem; opacity: 0.7;">Silakan scan QR Code Anda</div>
+    <div id="poin" class="poin-badge" style="display:none;"></div>
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2ZhkALonLoROw4Cp2wQ7aTk-iGcwqIrjIfxhtyJk_-jRcLt4kPMPIjacBT0_i-yNK/exec"; // Tempel URL Apps Script Anda di sini
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2ZhkALonLoROw4Cp2wQ7aTk-iGcwqIrjIfxhtyJk_-jRcLt4kPMPIjacBT0_i-yNK/exec"; 
     let isProcessing = false;
 
-    function onScanSuccess(decodedText) {
+    function onScanSuccess(id) {
       if (isProcessing) return;
       isProcessing = true;
-      document.getElementById('st').innerText = "MENYINKRONKAN...";
-      if (navigator.vibrate) navigator.vibrate(50);
-
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify({ id: decodedText })
-      })
+      document.getElementById('st').innerText = "MENGECEK JADWAL...";
+      
+      fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ id: id }) })
       .then(r => r.json())
       .then(res => {
-        const container = document.getElementById('res');
-        container.className = res.status.toLowerCase();
+        const card = document.getElementById('res');
+        const poin = document.getElementById('poin');
         
+        card.style.borderColor = res.theme || "#e2e8f0";
         document.getElementById('st').innerText = res.title;
+        document.getElementById('st').style.color = res.theme || "#64748b";
         document.getElementById('nm').innerText = res.nama || "-";
-        document.getElementById('kl').innerText = res.kelas || res.sub || "-";
-        document.getElementById('wk').innerText = res.waktu || "-";
+        document.getElementById('sub').innerText = res.sub || "-";
         
+        if(res.poin) {
+          poin.style.display = "inline-block";
+          poin.innerText = res.poin + " POIN";
+          poin.style.background = res.theme;
+        }
+
         setTimeout(() => {
           isProcessing = false;
-          container.className = "";
+          card.style.borderColor = "#e2e8f0";
+          poin.style.display = "none";
           document.getElementById('st').innerText = "SIAP PINDAI";
-          document.getElementById('st').className = "badge";
-        }, 3500);
-      })
-      .catch(err => {
-        isProcessing = false;
-        alert("Koneksi gagal. Pastikan internet aktif.");
+          document.getElementById('st').style.color = "#64748b";
+        }, 4000);
       });
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, onScanSuccess);
+    new Html5Qrcode("reader").start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, onScanSuccess);
   </script>
 </body>
 </html>
