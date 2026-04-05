@@ -1,94 +1,201 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DAPS 2026 by RARM</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root { --emerald: #064e3b; --gold: #b45309; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .header { width: 100%; padding: 20px 0; text-align: center; background: var(--emerald); border-bottom: 4px solid #fbbf24; color: white; }
-    #reader { width: 92%; max-width: 400px; border-radius: 20px; overflow: hidden; margin-top: 15px; border: 4px solid white; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-    #res { width: 88%; max-width: 360px; margin-top: 15px; padding: 20px; border-radius: 25px; background: white; text-align: center; border: 2px solid #e2e8f0; transition: 0.2s; }
-    #nm { font-size: 1.4rem; font-weight: 800; margin: 8px 0; line-height: 1.2; }
-    .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; background: #f1f5f9; color: #64748b; text-transform: uppercase; }
-    .poin { display: inline-block; padding: 6px 14px; border-radius: 12px; background: var(--emerald); color: white; font-weight: 800; margin-top: 10px; font-size: 0.9rem; }
-    .success { border-color: #10b981 !important; background: #f0fdf4 !important; }
-    .warning { border-color: #f59e0b !important; background: #fffbeb !important; }
-    .error { border-color: #ef4444 !important; background: #fef2f2 !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAPS 2026</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        @media (min-height: 600px) {
+            .container {
+                height: auto;
+                border-radius: 24px;
+                padding-bottom: 20px;
+            }
+        }
+
+        .header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: var(--primary);
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .camera-container {
+            position: relative;
+            background: #000;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #reader {
+            width: 100%;
+        }
+
+        /* Menghilangkan UI bawaan library agar bersih */
+        #reader__dashboard, #reader__status_span, #reader button {
+            display: none !important;
+        }
+
+        .status-box {
+            padding: 25px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #status-text {
+            font-size: 16px;
+            color: #7f8c8d;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status-active {
+            color: var(--success) !important;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .status-error {
+            color: var(--accent) !important;
+            font-weight: bold;
+        }
+
+        .scan-line {
+            height: 2px;
+            background: var(--accent);
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            animation: moveScan 2s infinite linear;
+            box-shadow: 0 0 8px var(--accent);
+            z-index: 10;
+        }
+
+        @keyframes moveScan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <div style="font-size: 0.6rem; font-weight: 800; letter-spacing: 2px; opacity: 0.8;">DAPS 2026</div>
-    <div style="font-size: 1.3rem; font-weight: 800;">by RARM</div>
-  </div>
+<div class="container">
+    <div class="header">
+        <h1>DAPS 2026</h1>
+    </div>
 
-  <div id="reader"></div>
-  
-  <div id="res">
-    <div id="st" class="badge">SIAP PINDAI</div>
-    <div id="nm">Menunggu Scan...</div>
-    <div id="sub" style="font-size: 0.8rem; color: #64748b;">Arahkan kamera ke QR Code</div>
-    <div id="pn" class="poin" style="display:none"></div>
-  </div>
+    <div class="camera-container">
+        <div id="reader"></div>
+        <div class="scan-line"></div>
+    </div>
 
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2ZhkALonLoROw4Cp2wQ7aTk-iGcwqIrjIfxhtyJk_-jRcLt4kPMPIjacBT0_i-yNK/exec"; 
-    let isProcessing = false;
+    <div class="status-box">
+        <div id="status-text">Siap Memindai Barcode...</div>
+    </div>
+</div>
 
-    function onScanSuccess(id) {
-      if (isProcessing) return;
-      isProcessing = true;
+<script>
+    // URL Web App Google Apps Script Anda
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
+    
+    const statusText = document.getElementById('status-text');
+    let isScanning = true;
 
-      // Feedback Instan
-      if (navigator.vibrate) navigator.vibrate(60);
-      document.getElementById('st').innerText = "MEMPROSES...";
-      document.getElementById('st').style.color = "#2563eb";
-
-      fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ id: id }) })
-      .then(r => r.json())
-      .then(res => {
-        const card = document.getElementById('res');
-        const pn = document.getElementById('pn');
+    function onScanSuccess(decodedText) {
+        if (!isScanning) return;
         
-        card.className = res.status.toLowerCase();
-        document.getElementById('st').innerText = res.title;
-        document.getElementById('st').style.color = res.theme || "#64748b";
-        document.getElementById('nm').innerText = res.nama || "ID: " + id;
-        document.getElementById('sub').innerText = res.sub;
-        
-        if(res.poin) {
-          pn.style.display = "inline-block";
-          pn.innerText = res.poin + " POIN";
-          pn.style.background = res.theme;
-        }
+        isScanning = false; // Kunci scanner agar tidak mengirim ganda
+        statusText.innerText = "Memproses: " + decodedText + "...";
+        statusText.style.color = "#2980b9";
 
-        // JEDA SANGAT SINGKAT (1 Detik)
-        setTimeout(() => {
-          isProcessing = false;
-          card.className = "";
-          pn.style.display = "none";
-          document.getElementById('st').innerText = "SIAP PINDAI";
-          document.getElementById('st').style.color = "#64748b";
-        }, 1200); 
-      })
-      .catch(err => {
-        isProcessing = false;
-        document.getElementById('st').innerText = "KONEKSI ERROR";
-        setTimeout(() => isProcessing = false, 2000);
-      });
+        // Mengirim data ke Google Sheets via Apps Script (Metode POST)
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors", // Mengizinkan request ke domain berbeda
+            cache: "no-cache",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ nama: decodedText }),
+        })
+        .then(() => {
+            // Karena menggunakan no-cors, kita tidak bisa membaca response JSON, 
+            // namun jika fetch berhasil, kita asumsikan data terkirim.
+            statusText.innerText = "Berhasil Dicatat: " + decodedText;
+            statusText.classList.add('status-active');
+
+            // Reset scanner setelah 1.5 detik
+            setTimeout(() => {
+                statusText.innerText = "Siap Memindai Barcode...";
+                statusText.classList.remove('status-active');
+                statusText.style.color = "#7f8c8d";
+                isScanning = true;
+            }, 1500);
+        })
+        .catch(err => {
+            statusText.innerText = "Gagal Mengirim Data!";
+            statusText.classList.add('status-error');
+            console.error(err);
+            setTimeout(() => { isScanning = true; }, 3000);
+        });
     }
 
+    // Inisialisasi Scanner
     const html5QrCode = new Html5Qrcode("reader");
+    const config = { 
+        fps: 20, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+    };
+
     html5QrCode.start(
-      { facingMode: "environment" }, 
-      { fps: 30, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 }, 
-      onScanSuccess
-    );
-  </script>
+        { facingMode: "environment" }, 
+        config, 
+        onScanSuccess
+    ).catch(err => {
+        statusText.innerText = "Kamera tidak terdeteksi atau izin ditolak.";
+        statusText.classList.add('status-error');
+    });
+</script>
+
 </body>
 </html>
