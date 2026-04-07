@@ -5,23 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAPS 2026 | RARM</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2c3e50;
-            --accent: #d4af37; /* Gold for Luxury */
+            --accent: #d4af37; /* Gold Luxury */
             --bg: #f4f7f6;
             --card: rgba(255, 255, 255, 0.9);
             --text: #2c3e50;
+            --shadow: rgba(0,0,0,0.1);
         }
 
         [data-theme="dark"] {
-            --bg: #1a1a1a;
-            --card: rgba(44, 62, 80, 0.8);
-            --text: #ecf0f1;
+            --bg: #121212;
+            --card: rgba(30, 30, 30, 0.9);
+            --text: #e0e0e0;
+            --shadow: rgba(0,0,0,0.5);
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -29,92 +32,115 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            transition: 0.3s;
+            transition: all 0.4s ease;
         }
 
         .container {
             background: var(--card);
-            backdrop-filter: blur(10px);
-            width: 90%;
+            backdrop-filter: blur(15px);
+            width: 85%;
             max-width: 400px;
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-radius: 25px;
+            padding: 40px 20px;
+            box-shadow: 0 20px 50px var(--shadow);
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
 
         .header h1 {
-            font-size: 1.5rem;
-            letter-spacing: 3px;
-            margin-bottom: 5px;
+            font-size: 1.4rem;
+            letter-spacing: 4px;
+            margin: 0;
+            text-transform: uppercase;
             color: var(--accent);
         }
 
-        #setup-area, #scanner-area { display: none; }
+        .header small { opacity: 0.5; font-size: 0.7rem; }
+
+        #setup-area, #scanner-area { display: none; margin-top: 30px; }
 
         input {
             width: 80%;
-            padding: 12px;
+            padding: 14px;
             border-radius: 12px;
-            border: 1px solid #ddd;
-            margin: 20px 0;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
             text-align: center;
             font-size: 1rem;
+            color: var(--text);
         }
 
         button {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 40px;
             border-radius: 12px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             transition: 0.3s;
         }
 
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px var(--shadow); }
 
-        #reader { width: 100%; border-radius: 20px; overflow: hidden; margin-top: 20px; }
-
-        .status-msg { margin-top: 20px; font-weight: 500; font-size: 0.9rem; }
-
-        .theme-toggle {
-            position: absolute; top: 20px; right: 20px;
-            cursor: pointer; font-size: 1.2rem;
+        #reader { 
+            width: 100%; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 2px solid var(--accent) !important;
         }
+
+        .status-msg { 
+            margin-top: 25px; 
+            font-weight: 600; 
+            min-height: 24px;
+            transition: 0.3s;
+        }
+
+        .theme-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0;
+        }
+
+        /* Scan Animation Line */
+        .scanner-wrapper { position: relative; }
     </style>
 </head>
 <body>
 
-<div class="theme-toggle" onclick="toggleTheme()">🌓</div>
-
 <div class="container">
+    <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+    
     <div class="header">
         <h1>DAPS 2026</h1>
-        <small style="opacity: 0.6;">Developed by RARM</small>
+        <small>PROJECT BY RARM</small>
     </div>
 
     <div id="setup-area">
-        <p>Perangkat Belum Terdaftar.<br>Masukkan Kode Aktivasi:</p>
-        <input type="text" id="activation-code" placeholder="Contoh: panitia1">
+        <p style="font-size: 0.9rem;">Perangkat tidak terdeteksi.<br>Masukkan Kode Aktivasi Admin:</p>
+        <input type="text" id="activation-code" placeholder="panitia1">
         <br>
-        <button onclick="activateDevice()">AKTIFKAN AKSES</button>
+        <button onclick="activateDevice()">VERIFIKASI</button>
         <div id="setup-status" class="status-msg"></div>
     </div>
 
     <div id="scanner-area">
-        <div id="reader"></div>
-        <div id="scan-status" class="status-msg">Siap memindai...</div>
+        <div class="scanner-wrapper">
+            <div id="reader"></div>
+        </div>
+        <div id="scan-status" class="status-msg">Siap Memindai...</div>
     </div>
 </div>
 
 <script>
+    // GANTI URL DI BAWAH INI
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
-    let deviceToken = localStorage.getItem('daps_token');
+    
+    let deviceToken = localStorage.getItem('RARM_auth_token');
+    let isProcessing = false;
 
-    // Cek status saat load
     window.onload = () => {
         if (!deviceToken) {
             document.getElementById('setup-area').style.display = 'block';
@@ -124,11 +150,12 @@
     };
 
     async function activateDevice() {
-        const code = document.getElementById('activation-code').value;
+        const code = document.getElementById('activation-code').value.toUpperCase();
         const status = document.getElementById('setup-status');
-        
         if (!code) return;
-        status.innerText = "Memverifikasi...";
+
+        status.innerText = "Mengecek Database...";
+        status.style.color = "var(--accent)";
 
         try {
             const resp = await fetch(WEB_APP_URL, {
@@ -138,31 +165,36 @@
             const result = await resp.json();
 
             if (result.result === "success") {
-                localStorage.setItem('daps_token', result.token);
-                location.reload();
+                localStorage.setItem('RARM_auth_token', result.token);
+                status.innerText = "Akses Diterima! Membuka...";
+                status.style.color = "#27ae60";
+                setTimeout(() => location.reload(), 1000);
             } else {
                 status.innerText = result.message;
-                status.style.color = "red";
+                status.style.color = "#e74c3c";
             }
         } catch (e) {
-            status.innerText = "Kesalahan Koneksi!";
+            status.innerText = "Gagal terhubung ke server.";
         }
     }
 
     function startScanner() {
         document.getElementById('scanner-area').style.display = 'block';
         const html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 20, qrbox: 250 },
-            onScanSuccess
-        );
+        const config = { fps: 20, qrbox: 250 };
+        
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
     }
 
     async function onScanSuccess(decodedText) {
+        if (isProcessing) return; // Kunci agar tidak double
+        isProcessing = true;
+
         const status = document.getElementById('scan-status');
-        status.innerText = "Mengirim: " + decodedText;
+        status.innerText = "⏳ Mencatat: " + decodedText;
         status.style.color = "var(--accent)";
+
+        if (navigator.vibrate) navigator.vibrate(50); 
 
         try {
             const resp = await fetch(WEB_APP_URL, {
@@ -174,24 +206,31 @@
                 })
             });
             const result = await resp.json();
-            
+
             if (result.result === "success") {
-                status.innerText = "BERHASIL: " + decodedText;
+                status.innerText = "✅ BERHASIL: " + decodedText;
                 status.style.color = "#27ae60";
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             } else {
-                status.innerText = "GAGAL: " + result.message;
+                status.innerText = "❌ ERROR: " + result.message;
                 status.style.color = "#e74c3c";
             }
         } catch (e) {
-            status.innerText = "Koneksi Bermasalah!";
+            status.innerText = "⚠️ Masalah Jaringan!";
+        } finally {
+            // Jeda 3 detik agar tidak ter-scan ulang secara otomatis
+            setTimeout(() => {
+                status.innerText = "Siap Memindai...";
+                status.style.color = "var(--text)";
+                isProcessing = false;
+            }, 3000);
         }
     }
 
     function toggleTheme() {
         const body = document.body;
-        body.getAttribute('data-theme') === 'dark' ? 
-            body.removeAttribute('data-theme') : 
-            body.setAttribute('data-theme', 'dark');
+        const current = body.getAttribute('data-theme');
+        body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
     }
 </script>
 </body>
