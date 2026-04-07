@@ -1,224 +1,198 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DAPS 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAPS 2026 | RARM</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #d4af37; /* Gold for Luxury */
+            --bg: #f4f7f6;
+            --card: rgba(255, 255, 255, 0.9);
+            --text: #2c3e50;
+        }
 
-<script src="https://unpkg.com/html5-qrcode"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+        [data-theme="dark"] {
+            --bg: #1a1a1a;
+            --card: rgba(44, 62, 80, 0.8);
+            --text: #ecf0f1;
+        }
 
-<style>
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: #f1f5f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: 0.3s;
+        }
 
-/* CONTAINER */
-.app {
-    width: 100%;
-    max-width: 380px;
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
+        .container {
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
-/* HEADER */
-.header {
-    text-align: center;
-    padding: 20px;
-    font-weight: 600;
-    font-size: 18px;
-    border-bottom: 1px solid #eee;
-}
+        .header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
 
-/* LOGIN */
-.login {
-    padding: 25px;
-    text-align: center;
-}
+        #setup-area, #scanner-area { display: none; }
 
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
+        input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1rem;
+        }
 
-button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: #2563eb;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
 
-button:active {
-    transform: scale(0.98);
-}
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-/* LOADING */
-.loading {
-    font-size: 13px;
-    color: #64748b;
-}
+        #reader { width: 100%; border-radius: 20px; overflow: hidden; margin-top: 20px; }
 
-/* CAMERA */
-#reader {
-    width: 100%;
-}
+        .status-msg { margin-top: 20px; font-weight: 500; font-size: 0.9rem; }
 
-/* STATUS */
-.status {
-    text-align: center;
-    padding: 15px;
-    font-size: 14px;
-    color: #64748b;
-}
-
-/* SUCCESS */
-.success {
-    color: #16a34a;
-    font-weight: 600;
-}
-
-/* ERROR */
-.error {
-    color: #dc2626;
-    font-weight: 600;
-}
-</style>
+        .theme-toggle {
+            position: absolute; top: 20px; right: 20px;
+            cursor: pointer; font-size: 1.2rem;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="app">
+<div class="theme-toggle" onclick="toggleTheme()">🌓</div>
 
-<!-- LOGIN -->
-<div id="login-box">
-    <div class="header">DAPS 2026</div>
+<div class="container">
+    <div class="header">
+        <h1>DAPS 2026</h1>
+        <small style="opacity: 0.6;">Developed by RARM</small>
+    </div>
 
-    <div class="login">
-        <input type="text" id="kode" placeholder="Kode akses">
-        <button onclick="login()">Masuk</button>
-        <div id="login-status" class="loading"></div>
+    <div id="setup-area">
+        <p>Perangkat Belum Terdaftar.<br>Masukkan Kode Aktivasi:</p>
+        <input type="text" id="activation-code" placeholder="Contoh: panitia1">
+        <br>
+        <button onclick="activateDevice()">AKTIFKAN AKSES</button>
+        <div id="setup-status" class="status-msg"></div>
+    </div>
+
+    <div id="scanner-area">
+        <div id="reader"></div>
+        <div id="scan-status" class="status-msg">Siap memindai...</div>
     </div>
 </div>
 
-<!-- SCANNER -->
-<div id="app-box" style="display:none;">
-    <div class="header">Scan Barcode</div>
-    <div id="reader"></div>
-    <div id="status-text" class="status">Siap memindai...</div>
-</div>
-
-</div>
-
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
+    let deviceToken = localStorage.getItem('daps_token');
 
-let isScanning = true;
-
-// 🔊 BEEP
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-// LOGIN (DIPERCEPAT UX)
-function login() {
-    const kode = document.getElementById("kode").value;
-    const status = document.getElementById("login-status");
-
-    if (!kode) {
-        status.innerText = "Masukkan kode!";
-        return;
-    }
-
-    status.innerText = "Memeriksa akses...";
-
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ type: "login", kode: kode })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.valid) {
-            status.innerText = "Akses diterima";
-            status.style.color = "green";
-
-            setTimeout(() => {
-                document.getElementById("login-box").style.display = "none";
-                document.getElementById("app-box").style.display = "block";
-                startScanner();
-            }, 300);
-
+    // Cek status saat load
+    window.onload = () => {
+        if (!deviceToken) {
+            document.getElementById('setup-area').style.display = 'block';
         } else {
-            status.innerText = "Akses ditolak!";
-            status.style.color = "red";
+            startScanner();
         }
-    })
-    .catch(() => {
-        status.innerText = "Koneksi bermasalah";
-        status.style.color = "red";
-    });
-}
+    };
 
-// SCANNER
-function startScanner() {
-    const statusText = document.getElementById("status-text");
+    async function activateDevice() {
+        const code = document.getElementById('activation-code').value;
+        const status = document.getElementById('setup-status');
+        
+        if (!code) return;
+        status.innerText = "Memverifikasi...";
 
-    function onScanSuccess(decodedText) {
-        if (!isScanning) return;
+        try {
+            const resp = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'activate', code: code })
+            });
+            const result = await resp.json();
 
-        isScanning = false;
-        statusText.innerText = "Memproses...";
-        statusText.className = "status";
-
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ type: "scan", nama: decodedText })
-        })
-        .then(res => res.json())
-        .then(() => {
-
-            beep.play();
-
-            statusText.innerText = "✔ Berhasil: " + decodedText;
-            statusText.className = "status success";
-
-            setTimeout(() => {
-                statusText.innerText = "Siap memindai...";
-                statusText.className = "status";
-                isScanning = true;
-            }, 1200);
-        })
-        .catch(() => {
-            statusText.innerText = "Gagal kirim!";
-            statusText.className = "status error";
-            setTimeout(() => { isScanning = true; }, 2000);
-        });
+            if (result.result === "success") {
+                localStorage.setItem('daps_token', result.token);
+                location.reload();
+            } else {
+                status.innerText = result.message;
+                status.style.color = "red";
+            }
+        } catch (e) {
+            status.innerText = "Kesalahan Koneksi!";
+        }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
+    function startScanner() {
+        document.getElementById('scanner-area').style.display = 'block';
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 20, qrbox: 250 },
+            onScanSuccess
+        );
+    }
 
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 15, qrbox: 230 },
-        onScanSuccess
-    );
-}
+    async function onScanSuccess(decodedText) {
+        const status = document.getElementById('scan-status');
+        status.innerText = "Mengirim: " + decodedText;
+        status.style.color = "var(--accent)";
+
+        try {
+            const resp = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    action: 'scan', 
+                    token: deviceToken, 
+                    nama: decodedText 
+                })
+            });
+            const result = await resp.json();
+            
+            if (result.result === "success") {
+                status.innerText = "BERHASIL: " + decodedText;
+                status.style.color = "#27ae60";
+            } else {
+                status.innerText = "GAGAL: " + result.message;
+                status.style.color = "#e74c3c";
+            }
+        } catch (e) {
+            status.innerText = "Koneksi Bermasalah!";
+        }
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        body.getAttribute('data-theme') === 'dark' ? 
+            body.removeAttribute('data-theme') : 
+            body.setAttribute('data-theme', 'dark');
+    }
 </script>
-
 </body>
 </html>
