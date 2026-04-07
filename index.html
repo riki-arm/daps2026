@@ -1,126 +1,148 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAPS 2026</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --success: #27ae60;
-            --bg: #f8f9fa;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAPS 2026</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-        .container {
-            background: white;
-            width: 100%;
-            max-width: 420px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
+<style>
+:root {
+    --primary: #1f2d3d;
+    --accent: #4f46e5;
+    --success: #16a34a;
+    --error: #dc2626;
+}
 
-        @media (min-height: 600px) {
-            .container {
-                height: auto;
-                border-radius: 24px;
-                padding-bottom: 20px;
-            }
-        }
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #e0e7ff, #f8fafc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-        .header {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
+/* CARD */
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
 
-        .header h1 {
-            font-size: 20px;
-            color: var(--primary);
-            margin: 0;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+/* HEADER */
+.header {
+    padding: 25px;
+    text-align: center;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+}
 
-        .camera-container {
-            position: relative;
-            background: #000;
-            width: 100%;
-            overflow: hidden;
-        }
+/* LOGIN */
+.login-box {
+    padding: 30px;
+    text-align: center;
+}
 
-        #reader {
-            width: 100%;
-        }
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
 
-        /* Menghilangkan UI bawaan library agar bersih */
-        #reader__dashboard, #reader__status_span, #reader button {
-            display: none !important;
-        }
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
 
-        .status-box {
-            padding: 25px;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+/* CAMERA */
+.camera-container {
+    background: black;
+    position: relative;
+}
 
-        #status-text {
-            font-size: 16px;
-            color: #7f8c8d;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+#reader {
+    width: 100%;
+}
 
-        .status-active {
-            color: var(--success) !important;
-            font-weight: bold;
-            transform: scale(1.05);
-        }
+/* SCAN LINE */
+.scan-line {
+    height: 2px;
+    background: red;
+    position: absolute;
+    width: 100%;
+    animation: scan 2s linear infinite;
+}
 
-        .status-error {
-            color: var(--accent) !important;
-            font-weight: bold;
-        }
+@keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
 
-        .scan-line {
-            height: 2px;
-            background: var(--accent);
-            width: 100%;
-            position: absolute;
-            top: 50%;
-            animation: moveScan 2s infinite linear;
-            box-shadow: 0 0 8px var(--accent);
-            z-index: 10;
-        }
+/* STATUS */
+.footer {
+    padding: 20px;
+    text-align: center;
+}
 
-        @keyframes moveScan {
-            0% { top: 0%; }
-            100% { top: 100%; }
-        }
-    </style>
+/* NOTIFICATION */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #16a34a;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: 0.4s;
+    font-weight: 500;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
 </head>
+
 <body>
 
-<div class="container">
+<!-- 🔔 NOTIF -->
+<div id="toast" class="toast"></div>
+
+<!-- 🔐 LOGIN -->
+<div id="login-card" class="card">
     <div class="header">
-        <h1>DAPS 2026</h1>
+        <h2>DAPS 2026</h2>
+    </div>
+
+    <div class="login-box">
+        <input type="text" id="kode" placeholder="Masukkan Kode Akses">
+        <button onclick="login()">Masuk</button>
+        <p id="login-status"></p>
+    </div>
+</div>
+
+<!-- 📷 APP -->
+<div id="app-card" class="card" style="display:none;">
+    <div class="header">
+        <h2>DAPS 2026</h2>
     </div>
 
     <div class="camera-container">
@@ -128,73 +150,108 @@
         <div class="scan-line"></div>
     </div>
 
-    <div class="status-box">
-        <div id="status-text">Siap Memindai Barcode...</div>
+    <div class="footer">
+        <div id="status-text">Siap memindai...</div>
     </div>
 </div>
 
 <script>
-    // URL Web App Google Apps Script Anda
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
-    
-    const statusText = document.getElementById('status-text');
-    let isScanning = true;
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdol6Bk2Ciq4f-VHA5igfuE4QroqAXfNUG5l255v85gkLcp5Hg8VgwyXPbvS35RrVnvQ/exec";
+
+let isScanning = true;
+
+// 🔊 BEEP SOUND
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+// 🔔 TOAST
+function showToast(text) {
+    const toast = document.getElementById("toast");
+    toast.innerText = text;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+// LOGIN
+function login() {
+    const kode = document.getElementById("kode").value;
+    const status = document.getElementById("login-status");
+
+    status.innerText = "Memeriksa...";
+
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "login", kode: kode })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.valid) {
+            status.innerText = "Akses diterima";
+            status.style.color = "green";
+
+            setTimeout(() => {
+                document.getElementById("login-card").style.display = "none";
+                document.getElementById("app-card").style.display = "block";
+                startScanner();
+            }, 500);
+        } else {
+            status.innerText = "Akses ditolak!";
+            status.style.color = "red";
+        }
+    });
+}
+
+// SCANNER
+function startScanner() {
+    const statusText = document.getElementById("status-text");
 
     function onScanSuccess(decodedText) {
         if (!isScanning) return;
-        
-        isScanning = false; // Kunci scanner agar tidak mengirim ganda
-        statusText.innerText = "Memproses: " + decodedText + "...";
-        statusText.style.color = "#2980b9";
 
-        // Mengirim data ke Google Sheets via Apps Script (Metode POST)
+        isScanning = false;
+        statusText.innerText = "Memproses: " + decodedText;
+
         fetch(WEB_APP_URL, {
             method: "POST",
-            mode: "no-cors", // Mengizinkan request ke domain berbeda
-            cache: "no-cache",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ nama: decodedText }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "scan", nama: decodedText })
         })
+        .then(res => res.json())
         .then(() => {
-            // Karena menggunakan no-cors, kita tidak bisa membaca response JSON, 
-            // namun jika fetch berhasil, kita asumsikan data terkirim.
-            statusText.innerText = "Berhasil Dicatat: " + decodedText;
-            statusText.classList.add('status-active');
 
-            // Reset scanner setelah 1.5 detik
+            // 🔊 BEEP
+            beep.play();
+
+            // 🔔 NOTIF
+            showToast("✔ Berhasil: " + decodedText);
+
+            statusText.innerText = "Berhasil disimpan";
+            statusText.style.color = "green";
+
             setTimeout(() => {
-                statusText.innerText = "Siap Memindai Barcode...";
-                statusText.classList.remove('status-active');
-                statusText.style.color = "#7f8c8d";
+                statusText.innerText = "Siap memindai...";
+                statusText.style.color = "#64748b";
                 isScanning = true;
             }, 1500);
         })
-        .catch(err => {
-            statusText.innerText = "Gagal Mengirim Data!";
-            statusText.classList.add('status-error');
-            console.error(err);
-            setTimeout(() => { isScanning = true; }, 3000);
+        .catch(() => {
+            statusText.innerText = "Gagal!";
+            statusText.style.color = "red";
+            setTimeout(() => { isScanning = true; }, 2000);
         });
     }
 
-    // Inisialisasi Scanner
     const html5QrCode = new Html5Qrcode("reader");
-    const config = { 
-        fps: 20, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
 
     html5QrCode.start(
-        { facingMode: "environment" }, 
-        config, 
+        { facingMode: "environment" },
+        { fps: 20, qrbox: 250 },
         onScanSuccess
-    ).catch(err => {
-        statusText.innerText = "Kamera tidak terdeteksi atau izin ditolak.";
-        statusText.classList.add('status-error');
-    });
+    );
+}
 </script>
 
 </body>
